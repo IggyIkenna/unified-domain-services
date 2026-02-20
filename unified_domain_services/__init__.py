@@ -21,6 +21,7 @@ from unified_domain_services.clients import (
     create_market_data_client,
     create_market_tick_data_client,
 )
+from unified_domain_services.instrument_date_filter import DateFilterService
 from unified_domain_services.date_validation import (
     DateValidationResult,
     DateValidator,
@@ -38,6 +39,7 @@ from unified_domain_services.standardized_service import StandardizedDomainCloud
 from unified_domain_services.validation import DomainValidationConfig, DomainValidationService
 
 __all__ = [
+    "DateFilterService",
     "StandardizedDomainCloudService",
     "DomainValidationService",
     "DomainValidationConfig",
