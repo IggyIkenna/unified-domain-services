@@ -1,0 +1,32 @@
+# unified-domain-services: Per-Repo Rules
+
+## Service-Specific Context
+
+**Type**: library
+**Purpose**: Trading domain services - clients, validation, cloud service wrappers, StandardizedDomainCloudService
+**Epic**: unified-libraries-refactor
+
+## Workspace Rules Apply
+
+All workspace rules from `../.cursorrules` apply.
+
+## Library-Specific Patterns
+
+### Dependencies
+
+- unified-cloud-services>=1.5.0 (foundation)
+- Re-exports: TimestampDateValidator, validate_timestamp_date_alignment, lookback constants from UCS
+- Domain clients: Instruments, MarketData, MarketTickData, Execution, Features
+
+### Architecture
+
+- **Cloud-agnostic**: Uses unified-cloud-services abstractions (get_storage_client, etc.)
+- **StandardizedDomainCloudService**: Canonical cloud service for batch/live domain operations
+- **Factories**: create_market_data_cloud_service, create_features_cloud_service, etc.
+
+### Quality Gates
+
+- scripts/quality-gates.sh (ruff + pytest)
+- .github/workflows/quality-gates.yml
+- cloudbuild.yaml (publish to Artifact Registry)
+- pre-commit: bump-library-version, ruff, pre-commit-hooks

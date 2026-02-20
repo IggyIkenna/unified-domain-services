@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=65", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "unified-domain-services"
+version = "0.1.2"
+description = "Trading domain services - clients, validation, cloud service wrappers"
+requires-python = ">=3.13,<3.14"
+dependencies = [
+    "pandas>=2.2.0",
+    "pyyaml>=6.0",
+    "unified-cloud-services>=1.5.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+    "pytest-asyncio>=0.21",
+    "ruff==0.15.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["unified_domain_services*"]
+exclude = ["tests*"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py313"
