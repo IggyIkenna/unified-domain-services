@@ -39,3 +39,11 @@ bash scripts/quality-gates.sh --no-fix
 ```bash
 bash scripts/quickmerge.sh "commit message"
 ```
+
+## Dependencies
+
+See [docs/DEPENDENCIES.md](docs/DEPENDENCIES.md) for library deps, install order, and public API.
+
+## Cloud Build
+
+Push to `main` triggers Cloud Build: lint → build wheel → publish to Artifact Registry (`unified-libraries`).
