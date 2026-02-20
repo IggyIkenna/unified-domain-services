@@ -36,7 +36,7 @@ from typing import Optional
 
 import yaml
 
-from unified_cloud_services.utils.lookback import (
+from unified_cloud_services.domain import (
     FEATURE_GROUP_LOOKBACK,
     MAX_LOOKBACK_DAYS_BY_TIMEFRAME,
 )

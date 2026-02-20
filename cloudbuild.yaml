@@ -1,9 +1,22 @@
 # Cloud Build for unified-domain-services
 # Depends on: unified-cloud-services (from Artifact Registry)
+# Trigger: push to main → auto-publish to Artifact Registry
 
 steps:
+  # Step 0: Ensure unified-libraries repo exists
+  - name: 'gcr.io/cloud-builders/gcloud'
+    id: 'ensure-repo'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        gcloud artifacts repositories describe unified-libraries --location=asia-northeast1 &>/dev/null || \
+          gcloud artifacts repositories create unified-libraries --repository-format=python --location=asia-northeast1 --description="Unified Python libraries"
+    waitFor: ['-']
+
   - name: 'python:3.13-slim'
     id: 'lint'
+    waitFor: ['ensure-repo']
     entrypoint: 'bash'
     args:
       - '-c'
@@ -23,7 +36,7 @@ steps:
         pip install uv build keyring keyrings.google-artifactregistry-auth
         mkdir -p /root/.config/pip
         echo "[global]
-        extra-index-url = https://asia-northeast1-python.pkg.dev/central-element-323112/unified-libraries/simple/" > /root/.config/pip/pip.conf
+        extra-index-url = https://asia-northeast1-python.pkg.dev/$PROJECT_ID/unified-libraries/simple/" > /root/.config/pip/pip.conf
         uv pip install --system unified-cloud-services
         uv pip install --system -e ".[dev]"
         python -m build --wheel --outdir dist/

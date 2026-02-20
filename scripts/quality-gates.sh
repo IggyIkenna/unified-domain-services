@@ -26,18 +26,26 @@ if ! command -v uv &> /dev/null; then
   pip install uv --quiet
 fi
 
-# Step 1: Install dependencies (clone deps if in CI with GH_PAT)
+# Step 0.5: Create/activate venv (use Python 3.13 per codex)
+if [ ! -d ".venv" ]; then
+  echo "Creating venv with Python 3.13..."
+  uv venv --python 3.13 .venv
+fi
+source .venv/bin/activate
+
+# Step 1: Install dependencies (clone deps if in CI with GH_PAT; workspace for local)
+INSTALL_CMD="uv pip install -e"
 if [ -d "deps/unified-config-interface" ] && [ -d "deps/unified-cloud-services" ]; then
   echo "Installing from cloned deps..."
-  uv pip install --system -e deps/unified-config-interface
-  uv pip install --system -e deps/unified-cloud-services
+  $INSTALL_CMD deps/unified-config-interface --quiet
+  $INSTALL_CMD deps/unified-cloud-services --quiet
 elif [ -d "../unified-config-interface" ] && [ -d "../unified-cloud-services" ]; then
-  uv pip install --system -e ../unified-config-interface
-  uv pip install --system -e ../unified-cloud-services
+  $INSTALL_CMD ../unified-config-interface --quiet 2>/dev/null || true
+  $INSTALL_CMD ../unified-cloud-services --quiet 2>/dev/null || true
 fi
 
-# Step 2: Install self (unified-cloud-services from PyPI/Artifact Registry if deps not cloned)
-uv pip install --system -e ".[dev]" --quiet
+# Step 2: Install self
+uv pip install -e ".[dev]" --quiet
 
 # Step 3: Format
 if [ "$NO_FIX" = false ]; then

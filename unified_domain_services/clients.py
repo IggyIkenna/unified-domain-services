@@ -160,12 +160,11 @@ class InstrumentsDomainClient:
         """
         from concurrent.futures import ThreadPoolExecutor, as_completed
 
-        from google.cloud import storage
+        from unified_cloud_services.core.client_factory import get_storage_client
 
         try:
-            # Get GCS client
-            client = storage.Client(project=self.cloud_target.project_id)
-            bucket = client.bucket(self.cloud_target.gcs_bucket)
+            # Get storage client (cloud-agnostic)
+            client = get_storage_client(project_id=self.cloud_target.project_id)
 
             base_prefix = f"instrument_availability/by_date/day={date_str}/"
 
@@ -173,10 +172,16 @@ class InstrumentsDomainClient:
                 # Load specific venues
                 venue_folders = [f"{base_prefix}venue={v}/" for v in venues]
             else:
-                # List all venue folders
-                iterator = bucket.list_blobs(prefix=base_prefix, delimiter="/")
-                list(iterator)  # Consume iterator to populate prefixes
-                venue_folders = [p for p in iterator.prefixes if "venue=" in p]
+                # List all venue folders using cloud-agnostic list_prefixes
+                venue_folders = [
+                    p
+                    for p in client.list_prefixes(
+                        bucket=self.cloud_target.gcs_bucket,
+                        prefix=base_prefix,
+                        delimiter="/",
+                    )
+                    if "venue=" in p
+                ]
 
             if not venue_folders:
                 logger.debug(f"No venue folders found for {date_str}")
@@ -1217,18 +1222,20 @@ class ExecutionDomainClient:
             List of run IDs
         """
         try:
-            from google.cloud import storage
+            from unified_cloud_services.core.client_factory import get_storage_client
 
             logger.info(f"📋 Listing backtest runs (prefix='{prefix}')")
 
-            client = storage.Client()
-            bucket = client.bucket(self.cloud_target.gcs_bucket)
-            blobs = bucket.list_blobs(prefix=f"backtest_results/{prefix}")
+            client = get_storage_client()
+            blobs = client.list_blobs(
+                bucket=self.cloud_target.gcs_bucket,
+                prefix=f"backtest_results/{prefix}",
+            )
 
             # Extract unique run IDs
             run_ids = set()
-            for blob in blobs:
-                parts = blob.name.replace("backtest_results/", "").split("/")
+            for blob_meta in blobs:
+                parts = blob_meta.name.replace("backtest_results/", "").split("/")
                 if parts and parts[0]:
                     run_ids.add(parts[0])
 
